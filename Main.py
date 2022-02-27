@@ -5,7 +5,8 @@ from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty,Clock
 from kivy.graphics.vertex_instructions import Line
-
+from kivy.core.window import Window
+from kivy import platform
 class MainWidget(Widget):
     
     def __init__(self,**kwargs):
@@ -19,8 +20,16 @@ class MainWidget(Widget):
         self.speedX = 0
         self.createVerticalLines()
         self.createHorizontalLines()
+        if(platform in ("linux","win","macosx")):
+            self._keyboard = Window.request_keyboard(self.keyboard_closed, self)
+            self._keyboard.bind(on_key_down=self.on_keyboard_down)
+            self._keyboard.bind(on_key_up=self.on_keyboard_up)
         Clock.schedule_interval(self.update,1/60)
-        
+
+    def keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+        self._keyboard.unbind(on_key_up=self._on_keyboard_up)
+        self._keyboard = None
 
     def on_size(self,*args):
         # self.perspectivePointX = self.width/2
@@ -84,6 +93,14 @@ class MainWidget(Widget):
         else: self.speedX = -5
 
     def on_touch_up(self, touch): self.speedX = 0
+
+    def on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        if (keycode[1] == 'left' or keycode[1] == 'a') : self.speedX = 5
+        elif (keycode[1] == 'right' or keycode[1] == 'd'): self.speedX = -5
+        return True
+
+    def on_keyboard_up(self, keyboard, keycode):
+        self.speedX = 0
 
 
 class GalaxyApp(App):
