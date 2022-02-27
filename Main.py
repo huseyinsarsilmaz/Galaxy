@@ -27,14 +27,25 @@ class MainWidget(Widget):
 
     def createVerticalLines(self):
         with self.canvas:
-            for i in range(7): self.lines.append(Line())
+            for i in range(10): self.lines.append(Line())
 
     def updateLines(self):
         spacing = self.width * 0.1
-        initX = self.width/2 - 3 * spacing
-        for i in range(7): 
-            x = int(initX + i * spacing)
-            self.lines[i].points = [x,0,x,self.height]
+        initX = self.width/2 - 4.5 * spacing
+        for i in range(10): 
+            x1,y1 = self.perspective(initX + i * spacing,0)
+            x2,y2 = self.perspective(initX + i * spacing,self.height)
+            self.lines[i].points = [x1,y1,x2,y2]
+
+    def dummy(self,x,y): return x,y
+    
+    def perspective(self,x,y):
+        y =  y * self.perspectivePointY / self.height
+        diffX = x - self.perspectivePointX
+        diffY = self.perspectivePointY -y
+        proportionY = diffY/self.perspectivePointY
+        x = self.perspectivePointX + diffX * proportionY
+        return int(x) ,int(y)
                 
 
 class GalaxyApp(App):
