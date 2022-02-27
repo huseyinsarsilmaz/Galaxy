@@ -9,14 +9,17 @@ class MainWidget(Widget):
         super().__init__(**kwargs)
         self.perspectivePointX = NumericProperty(0)
         self.perspectivePointY = NumericProperty(0)
-        self.lines = []
+        self.verticalLines = []
+        self.horizontalLines = []
         self.createVerticalLines()
+        self.createHorizontalLines()
         
 
     def on_size(self,*args):
         # self.perspectivePointX = self.width/2
         # self.perspectivePointY = self.height * 0.75
-        self.updateLines()
+        self.updateVerticalLines()
+        self.updateHorizontalLines()
         pass
 
     def on_perspectivePointX(self,widget,value):
@@ -27,15 +30,28 @@ class MainWidget(Widget):
 
     def createVerticalLines(self):
         with self.canvas:
-            for i in range(10): self.lines.append(Line())
+            for i in range(10): self.verticalLines.append(Line())
 
-    def updateLines(self):
+    def createHorizontalLines(self):
+        with self.canvas:
+            for i in range(15): self.horizontalLines.append(Line())
+    
+    def updateHorizontalLines(self):
+        minX = self.width/2 - 4.5 * self.width * 0.1
+        maxX = self.width/2 + 4.5 * self.width * 0.1
+        for i in range(15): 
+            y = i*0.2*self.height
+            x1,y1 = self.perspective(minX,y)
+            x2,y2 = self.perspective(maxX,y)
+            self.horizontalLines[i].points = [x1,y1,x2,y2]
+
+    def updateVerticalLines(self):
         spacing = self.width * 0.1
         initX = self.width/2 - 4.5 * spacing
         for i in range(10): 
             x1,y1 = self.perspective(initX + i * spacing,0)
             x2,y2 = self.perspective(initX + i * spacing,self.height)
-            self.lines[i].points = [x1,y1,x2,y2]
+            self.verticalLines[i].points = [x1,y1,x2,y2]
 
     def dummy(self,x,y): return x,y
     
