@@ -37,16 +37,16 @@ class MainWidget(Widget):
             for i in range(15): self.horizontalLines.append(Line())
     
     def updateHorizontalLines(self):
-        minX = self.width/2 - 4.5 * self.width * 0.1
-        maxX = self.width/2 + 4.5 * self.width * 0.1
+        minX = self.width/2 - 4.5 * self.width * 0.25
+        maxX = self.width/2 + 4.5 * self.width * 0.25
         for i in range(15): 
-            y = i*0.2*self.height
+            y = i*0.1*self.height
             x1,y1 = self.perspective(minX,y)
             x2,y2 = self.perspective(maxX,y)
             self.horizontalLines[i].points = [x1,y1,x2,y2]
 
     def updateVerticalLines(self):
-        spacing = self.width * 0.1
+        spacing = self.width * 0.25
         initX = self.width/2 - 4.5 * spacing
         for i in range(10): 
             x1,y1 = self.perspective(initX + i * spacing,0)
@@ -59,8 +59,10 @@ class MainWidget(Widget):
         y =  y * self.perspectivePointY / self.height
         diffX = x - self.perspectivePointX
         diffY = self.perspectivePointY -y
-        proportionY = diffY/self.perspectivePointY
-        x = self.perspectivePointX + diffX * proportionY
+        factorY = diffY/self.perspectivePointY
+        factorY = pow(factorY,4)
+        x = self.perspectivePointX + diffX * factorY
+        y = self.perspectivePointY - self.perspectivePointY * factorY
         return int(x) ,int(y)
                 
 
