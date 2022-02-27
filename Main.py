@@ -73,6 +73,8 @@ class MainWidget(Widget):
             lastY = self.tileCoordinates[-1][1] +1
         for i in range(len(self.tileCoordinates),8): 
             r = random.randint(0,2)
+            if( lastX <= -4): r = 1
+            elif( lastX > 5): r = 2
             if(r == 0):
                 self.tileCoordinates.append((lastX,lastY))
                 self.tileCoordinates.append((lastX,lastY+1))
