@@ -24,6 +24,7 @@ class MainWidget(Widget):
         self.tileCoordinates = []
         self.yLoop = 0
         self.ship = None
+        self.shipCoordinates = []
         self.createVerticalLines()
         self.createHorizontalLines()
         self.createTiles()
@@ -60,6 +61,9 @@ class MainWidget(Widget):
         x1,y1 = self.perspective(centerX - shipWidth,baseY)
         x2,y2 = self.perspective(centerX,baseY + self.height * 0.035) 
         x3,y3 = self.perspective(centerX + shipWidth,baseY)
+        self.shipCoordinates.append((centerX - shipWidth,baseY))
+        self.shipCoordinates.append((centerX,baseY + self.height * 0.035))
+        self.shipCoordinates.append((centerX + shipWidth,baseY))
         self.ship.points = [x1,y1,x2,y2,x3,y3]     
     
     def on_perspectivePointX(self,widget,value):
@@ -165,6 +169,21 @@ class MainWidget(Widget):
         y = self.perspectivePointY - self.perspectivePointY * factorY
         return int(x) ,int(y)
                 
+    def checkShipCollision(self):
+        for i in range(0,len(self.tileCoordinates)):
+            x,y = self.tileCoordinates[i]
+            if(y > self.yLoop +1): return False
+            if(self.checkShipCollisionTile(x,y)): return True
+        return False
+    
+    def checkShipCollisionTile(self,x,y):
+        minX,minY = self.getTileCoordinates(x,y)
+        maxX,maxY = self.getTileCoordinates(x+1,y+1)
+        for i in range(3):
+            px,py = self.shipCoordinates[i]
+            if( minX <= px <= maxX  and minY <= py <= maxY ): return True
+        return False
+    
     def update(self,dt):
         self.updateVerticalLines()
         self.updateHorizontalLines()
@@ -176,6 +195,7 @@ class MainWidget(Widget):
             self.offsetY -= 0.1 * self.height
             self.yLoop +=1
             self.generateTileCoordinates()
+        if not self.checkShipCollision(): print("GAME OVER")
 
     def on_touch_down(self, touch):
         if(touch.x < self.width/2): self.speedX = 5
