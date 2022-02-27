@@ -52,9 +52,16 @@ class MainWidget(Widget):
         with self.canvas:
             for i in range(8): self.horizontalLines.append(Line())
     
+    def getLineXfromIndex(self,index):
+        center = self.perspectivePointX
+        spacing = self.width * 0.25
+        offset = index - 0.5
+        lineX = center + spacing*offset + self.offsetX
+        return lineX
+    
     def updateHorizontalLines(self):
-        minX = self.width/2 - 4.5 * self.width * 0.25 + self.offsetX
-        maxX = self.width/2 + 4.5 * self.width * 0.25 + self.offsetX
+        minX = self.getLineXfromIndex(-4)
+        maxX = self.getLineXfromIndex(5)
         for i in range(8): 
             y = i*0.1*self.height-self.offsetY
             x1,y1 = self.perspective(minX,y)
@@ -62,11 +69,12 @@ class MainWidget(Widget):
             self.horizontalLines[i].points = [x1,y1,x2,y2]
 
     def updateVerticalLines(self):
-        spacing = self.width * 0.25
-        initX = self.width/2 - 4.5 * spacing
-        for i in range(10): 
-            x1,y1 = self.perspective(initX + i * spacing + self.offsetX,0)
-            x2,y2 = self.perspective(initX + i * spacing + self.offsetX,self.height)
+        # spacing = self.width * 0.25
+        # initX = self.width/2 - 4.5 * spacing 
+        for i in range(-4,6): 
+            x = self.getLineXfromIndex(i)
+            x1,y1 = self.perspective(x,0)
+            x2,y2 = self.perspective(x,self.height)
             self.verticalLines[i].points = [x1,y1,x2,y2]
 
     def dummy(self,x,y): return x,y
