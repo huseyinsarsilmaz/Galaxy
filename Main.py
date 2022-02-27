@@ -18,12 +18,13 @@ class MainWidget(Widget):
         self.offsetY = 0
         self.offsetX = 0
         self.speedX = 0
-        self.tile = None
-        self.tix = 0
-        self.tiy = 0
+        self.tiles = []
+        self.tileCoordinates = []
         self.createVerticalLines()
         self.createHorizontalLines()
         self.createTiles()
+        self.generateTileCoordinates()
+        self.yLoop = 0
         if(platform in ("linux","win","macosx")):
             self._keyboard = Window.request_keyboard(self.keyboard_closed, self)
             self._keyboard.bind(on_key_down=self.on_keyboard_down)
@@ -58,16 +59,31 @@ class MainWidget(Widget):
 
     def createTiles(self):
         with self.canvas:
-            self.tile = Quad()
+            for i in range(8): 
+                self.tiles.append(Quad())
+                
+    def generateTileCoordinates(self):
+        lastY = 0
+        
+        for i in range(len(self.tileCoordinates)-1,-1,-1):
+            if (self.tileCoordinates[i][1] < self.yLoop): del self.tileCoordinates[i]
+
+        if(len(self.tileCoordinates) > 0): lastY = self.tileCoordinates[-1][1] +1
+        
+        for i in range(len(self.tileCoordinates),8): 
+            self.tileCoordinates.append((0,lastY))
+            lastY += 1
+            
     
     def updateTiles(self):
-        xmin,ymin = self.getTileCoordinates(self.tix,self.tiy)
-        xmax,ymax = self.getTileCoordinates(self.tix+1,self.tiy+1)
-        x1,y1 = self.perspective(xmin,ymin)
-        x2,y2 = self.perspective(xmin,ymax)
-        x3,y3 = self.perspective(xmax,ymax)
-        x4,y4 = self.perspective(xmax,ymin)
-        self.tile.points = [x1,y1,x2,y2,x3,y3,x4,y4]
+        for i in range(8):
+            xmin,ymin = self.getTileCoordinates(self.tileCoordinates[i][0],self.tileCoordinates[i][1])
+            xmax,ymax = self.getTileCoordinates(self.tileCoordinates[i][0]+1,self.tileCoordinates[i][1]+1)
+            x1,y1 = self.perspective(xmin,ymin)
+            x2,y2 = self.perspective(xmin,ymax)
+            x3,y3 = self.perspective(xmax,ymax)
+            x4,y4 = self.perspective(xmax,ymin)
+            self.tiles[i].points = [x1,y1,x2,y2,x3,y3,x4,y4]
 
     def getLineXfromIndex(self,index):
         center = self.perspectivePointX
@@ -82,7 +98,7 @@ class MainWidget(Widget):
 
     def getTileCoordinates(self,ix,iy):
         x = self.getLineXfromIndex(ix)
-        y = self.getLineYfromIndex(iy)
+        y = self.getLineYfromIndex(iy-self.yLoop)
         return x,y
     
     def updateHorizontalLines(self):
@@ -121,7 +137,10 @@ class MainWidget(Widget):
         self.updateTiles()
         self.offsetY += 1 * dt * 60
         self.offsetX += self.speedX * dt * 60
-        if(self.offsetY >= 0.1 * self.height) : self.offsetY -= 0.1 * self.height
+        if(self.offsetY >= 0.1 * self.height): 
+            self.offsetY -= 0.1 * self.height
+            self.yLoop +=1
+            self.generateTileCoordinates()
 
     def on_touch_down(self, touch):
         if(touch.x < self.width/2): self.speedX = 5
