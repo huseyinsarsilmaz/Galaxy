@@ -36,12 +36,12 @@ class MainWidget(Widget):
 
     def createHorizontalLines(self):
         with self.canvas:
-            for i in range(7): self.horizontalLines.append(Line())
+            for i in range(8): self.horizontalLines.append(Line())
     
     def updateHorizontalLines(self):
         minX = self.width/2 - 4.5 * self.width * 0.25
         maxX = self.width/2 + 4.5 * self.width * 0.25
-        for i in range(7): 
+        for i in range(8): 
             y = i*0.1*self.height-self.offset
             x1,y1 = self.perspective(minX,y)
             x2,y2 = self.perspective(maxX,y)
@@ -70,7 +70,7 @@ class MainWidget(Widget):
     def update(self,dt):
         self.updateVerticalLines()
         self.updateHorizontalLines()
-        self.offset +=1
+        self.offset += 1 * dt * 60
         if(self.offset >= 0.1 * self.height) : self.offset -= 0.1 * self.height
 
 
