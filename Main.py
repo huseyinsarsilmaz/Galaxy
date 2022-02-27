@@ -1,3 +1,4 @@
+import random
 from kivy.config import Config
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '400')
@@ -64,14 +65,27 @@ class MainWidget(Widget):
                 
     def generateTileCoordinates(self):
         lastY = 0
-        
+        lastX = 0
         for i in range(len(self.tileCoordinates)-1,-1,-1):
             if (self.tileCoordinates[i][1] < self.yLoop): del self.tileCoordinates[i]
-
-        if(len(self.tileCoordinates) > 0): lastY = self.tileCoordinates[-1][1] +1
-        
+        if(len(self.tileCoordinates) > 0): 
+            lastX = self.tileCoordinates[-1][0]
+            lastY = self.tileCoordinates[-1][1] +1
         for i in range(len(self.tileCoordinates),8): 
-            self.tileCoordinates.append((0,lastY))
+            r = random.randint(0,2)
+            if(r == 0):
+                self.tileCoordinates.append((lastX,lastY))
+                self.tileCoordinates.append((lastX,lastY+1))
+                self.tileCoordinates.append((lastX,lastY+2))
+            elif(r == 1):
+                self.tileCoordinates.append((lastX,lastY))
+                self.tileCoordinates.append((lastX+1,lastY))
+                self.tileCoordinates.append((lastX+1,lastY+1))
+            else:
+                self.tileCoordinates.append((lastX,lastY))
+                self.tileCoordinates.append((lastX-1,lastY))
+                self.tileCoordinates.append((lastX-1,lastY+1))
+            
             lastY += 1
             
     
@@ -135,7 +149,7 @@ class MainWidget(Widget):
         self.updateVerticalLines()
         self.updateHorizontalLines()
         self.updateTiles()
-        self.offsetY += 1 * dt * 60
+        self.offsetY += 4 * dt * 60
         self.offsetX += self.speedX * dt * 60
         if(self.offsetY >= 0.1 * self.height): 
             self.offsetY -= 0.1 * self.height
