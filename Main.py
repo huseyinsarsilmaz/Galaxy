@@ -5,7 +5,8 @@ Config.set('graphics', 'height', '400')
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty,Clock
-from kivy.graphics.vertex_instructions import Line,Quad
+from kivy.graphics.vertex_instructions import Line,Quad,Triangle
+from kivy.graphics.context_instructions import Color
 from kivy.core.window import Window
 from kivy import platform
 class MainWidget(Widget):
@@ -21,11 +22,14 @@ class MainWidget(Widget):
         self.speedX = 0
         self.tiles = []
         self.tileCoordinates = []
+        self.yLoop = 0
+        self.ship = None
         self.createVerticalLines()
         self.createHorizontalLines()
         self.createTiles()
+        self.createShip()
+        for i in range(8): self.tileCoordinates.append((0,i))
         self.generateTileCoordinates()
-        self.yLoop = 0
         if(platform in ("linux","win","macosx")):
             self._keyboard = Window.request_keyboard(self.keyboard_closed, self)
             self._keyboard.bind(on_key_down=self.on_keyboard_down)
@@ -44,6 +48,20 @@ class MainWidget(Widget):
         # self.updateHorizontalLines()
         pass
 
+    def createShip(self):
+        with self.canvas:
+            Color(0,0,0)
+            self.ship = Triangle()
+
+    def updateShip(self):
+        centerX = self.width/2
+        baseY = self.height * 0.04
+        shipWidth = self.width * 0.1 / 2
+        x1,y1 = self.perspective(centerX - shipWidth,baseY)
+        x2,y2 = self.perspective(centerX,baseY + self.height * 0.035) 
+        x3,y3 = self.perspective(centerX + shipWidth,baseY)
+        self.ship.points = [x1,y1,x2,y2,x3,y3]     
+    
     def on_perspectivePointX(self,widget,value):
         pass
 
@@ -151,8 +169,9 @@ class MainWidget(Widget):
         self.updateVerticalLines()
         self.updateHorizontalLines()
         self.updateTiles()
-        self.offsetY += 4 * dt * 60
-        self.offsetX += self.speedX * dt * 60
+        self.updateShip()
+        self.offsetY += 0.5 * self.height * dt * 60 / 100
+        self.offsetX += 0.45 * self.width * self.speedX * dt * 60 /100
         if(self.offsetY >= 0.1 * self.height): 
             self.offsetY -= 0.1 * self.height
             self.yLoop +=1
