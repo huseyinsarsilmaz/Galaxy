@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.properties import NumericProperty
+from kivy.properties import NumericProperty,Clock
 from kivy.graphics.vertex_instructions import Line
 
 class MainWidget(Widget):
@@ -11,15 +11,17 @@ class MainWidget(Widget):
         self.perspectivePointY = NumericProperty(0)
         self.verticalLines = []
         self.horizontalLines = []
+        self.offset = 1
         self.createVerticalLines()
         self.createHorizontalLines()
+        Clock.schedule_interval(self.update,1/60)
         
 
     def on_size(self,*args):
         # self.perspectivePointX = self.width/2
         # self.perspectivePointY = self.height * 0.75
-        self.updateVerticalLines()
-        self.updateHorizontalLines()
+        # self.updateVerticalLines()
+        # self.updateHorizontalLines()
         pass
 
     def on_perspectivePointX(self,widget,value):
@@ -34,13 +36,13 @@ class MainWidget(Widget):
 
     def createHorizontalLines(self):
         with self.canvas:
-            for i in range(15): self.horizontalLines.append(Line())
+            for i in range(7): self.horizontalLines.append(Line())
     
     def updateHorizontalLines(self):
         minX = self.width/2 - 4.5 * self.width * 0.25
         maxX = self.width/2 + 4.5 * self.width * 0.25
-        for i in range(15): 
-            y = i*0.1*self.height
+        for i in range(7): 
+            y = i*0.1*self.height-self.offset
             x1,y1 = self.perspective(minX,y)
             x2,y2 = self.perspective(maxX,y)
             self.horizontalLines[i].points = [x1,y1,x2,y2]
@@ -65,6 +67,12 @@ class MainWidget(Widget):
         y = self.perspectivePointY - self.perspectivePointY * factorY
         return int(x) ,int(y)
                 
+    def update(self,dt):
+        self.updateVerticalLines()
+        self.updateHorizontalLines()
+        self.offset +=1
+        if(self.offset >= 0.1 * self.height) : self.offset -= 0.1 * self.height
+
 
 class GalaxyApp(App):
     pass
