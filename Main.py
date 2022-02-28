@@ -25,6 +25,7 @@ class MainWidget(Widget):
         self.yLoop = 0
         self.ship = None
         self.shipCoordinates = []
+        self.stateGameOver = False
         self.createVerticalLines()
         self.createHorizontalLines()
         self.createTiles()
@@ -189,13 +190,14 @@ class MainWidget(Widget):
         self.updateHorizontalLines()
         self.updateTiles()
         self.updateShip()
-        self.offsetY += 0.5 * self.height * dt * 60 / 100
-        self.offsetX += 0.45 * self.width * self.speedX * dt * 60 /100
-        if(self.offsetY >= 0.1 * self.height): 
-            self.offsetY -= 0.1 * self.height
-            self.yLoop +=1
-            self.generateTileCoordinates()
-        if not self.checkShipCollision(): print("GAME OVER")
+        if(not self.stateGameOver):
+            self.offsetY += 0.5 * self.height * dt * 60 / 100
+            self.offsetX += 0.45 * self.width * self.speedX * dt * 60 /100
+            while(self.offsetY >= 0.1 * self.height): 
+                self.offsetY -= 0.1 * self.height
+                self.yLoop +=1
+                self.generateTileCoordinates()
+        if (not self.checkShipCollision() and not self.stateGameOver): self.stateGameOver = True
 
     def on_touch_down(self, touch):
         if(touch.x < self.width/2): self.speedX = 5
