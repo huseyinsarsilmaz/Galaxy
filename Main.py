@@ -11,6 +11,7 @@ from kivy.core.window import Window
 from kivy.uix.relativelayout import RelativeLayout
 from kivy import platform
 from kivy.lang import Builder
+from kivy.core.audio import SoundLoader
 
 Builder.load_file("menu.kv")
 class MainWidget(RelativeLayout):
@@ -32,6 +33,19 @@ class MainWidget(RelativeLayout):
         self.shipCoordinates = []
         self.stateGameOver = False
         self.StateGameStart = False
+        self.soundBegin = SoundLoader.load("audio/begin.wav")
+        self.soundgalaxy = SoundLoader.load("audio/galaxy.wav")
+        self.soundImpact = SoundLoader.load("audio/gameover_impact.wav")
+        self.soundVoice = SoundLoader.load("audio/gameover_voice.wav")
+        self.soundMusic = SoundLoader.load("audio/music1.wav")
+        self.soundRestart= SoundLoader.load("audio/restart.wav")
+
+        self.soundBegin.volume = 1
+        self.soundgalaxy.volume = .25
+        self.soundImpact.volume = .6
+        self.soundVoice.volume = .25
+        self.soundMusic.volume = .25
+        self.soundRestart.volume = .25
         
         self.menuWidget = ObjectProperty()
         self.createVerticalLines()
@@ -45,12 +59,14 @@ class MainWidget(RelativeLayout):
             self._keyboard.bind(on_key_down=self.on_keyboard_down)
             self._keyboard.bind(on_key_up=self.on_keyboard_up)
         Clock.schedule_interval(self.update,1/60)
+        self.soundgalaxy.play()
 
     def keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
         self._keyboard.unbind(on_key_up=self._on_keyboard_up)
         self._keyboard = None
 
+    
     def on_size(self,*args):
         # self.perspectivePointX = self.width/2
         # self.perspectivePointY = self.height * 0.75
@@ -207,10 +223,15 @@ class MainWidget(RelativeLayout):
                 self.generateTileCoordinates()
         if (not self.checkShipCollision() and not self.stateGameOver): 
             self.stateGameOver = True
+            self.soundMusic.stop()
+            self.soundImpact.play()
+            Clock.schedule_once(self.gameOverSound,1)
             self.menuTitle = "G  A  M  E    O  V  E  R"
             self.buttonTitle = "RESTART"
             self.menuWidget.opacity = 1
 
+    def gameOverSound(self,dt): self.soundVoice.play()
+    
     def on_touch_down(self, touch):
         if(not self.stateGameOver and self.StateGameStart):
             if(touch.x < self.width/2): self.speedX = 5
@@ -228,9 +249,13 @@ class MainWidget(RelativeLayout):
         self.speedX = 0
 
     def onMenuButtonPressed(self): 
+        if(self.stateGameOver): self.soundRestart.play()
+        else: self.soundBegin.play()
+        self.soundMusic.play()
         self.resetGame()
         self.StateGameStart = True
         self.menuWidget.opacity = 0
+        
 
     def resetGame(self):
         self.offsetY = 0
