@@ -4,12 +4,16 @@ Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '400')
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.properties import NumericProperty,Clock
+from kivy.properties import NumericProperty,Clock,ObjectProperty
 from kivy.graphics.vertex_instructions import Line,Quad,Triangle
 from kivy.graphics.context_instructions import Color
 from kivy.core.window import Window
+from kivy.uix.relativelayout import RelativeLayout
 from kivy import platform
-class MainWidget(Widget):
+from kivy.lang import Builder
+
+Builder.load_file("menu.kv")
+class MainWidget(RelativeLayout):
     
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -26,6 +30,8 @@ class MainWidget(Widget):
         self.ship = None
         self.shipCoordinates = []
         self.stateGameOver = False
+        self.StateGameStart = False
+        self.menuWidget = ObjectProperty()
         self.createVerticalLines()
         self.createHorizontalLines()
         self.createTiles()
@@ -97,7 +103,7 @@ class MainWidget(Widget):
         for i in range(len(self.tileCoordinates),8): 
             r = random.randint(0,2)
             if( lastX <= -4): r = 1
-            elif( lastX > 5): r = 2
+            elif( lastX >= 5): r = 2
             if(r == 0):
                 self.tileCoordinates.append((lastX,lastY))
                 self.tileCoordinates.append((lastX,lastY+1))
@@ -190,18 +196,22 @@ class MainWidget(Widget):
         self.updateHorizontalLines()
         self.updateTiles()
         self.updateShip()
-        if(not self.stateGameOver):
+        if(not self.stateGameOver and self.StateGameStart):
             self.offsetY += 0.5 * self.height * dt * 60 / 100
             self.offsetX += 0.45 * self.width * self.speedX * dt * 60 /100
             while(self.offsetY >= 0.1 * self.height): 
                 self.offsetY -= 0.1 * self.height
                 self.yLoop +=1
                 self.generateTileCoordinates()
-        if (not self.checkShipCollision() and not self.stateGameOver): self.stateGameOver = True
+        if (not self.checkShipCollision() and not self.stateGameOver): 
+            self.stateGameOver = True
+            self.menuWidget.opacity = 1
 
     def on_touch_down(self, touch):
-        if(touch.x < self.width/2): self.speedX = 5
-        else: self.speedX = -5
+        if(not self.stateGameOver and self.StateGameStart):
+            if(touch.x < self.width/2): self.speedX = 5
+            else: self.speedX = -5
+        return super(MainWidget,self).on_touch_down(touch)
 
     def on_touch_up(self, touch): self.speedX = 0
 
@@ -212,6 +222,21 @@ class MainWidget(Widget):
 
     def on_keyboard_up(self, keyboard, keycode):
         self.speedX = 0
+
+    def onMenuButtonPressed(self): 
+        self.resetGame()
+        self.StateGameStart = True
+        self.menuWidget.opacity = 0
+
+    def resetGame(self):
+        self.offsetY = 0
+        self.offsetX = 0
+        self.speedX = 0
+        self.yLoop = 0
+        self.tileCoordinates = []
+        for i in range(8): self.tileCoordinates.append((0,i))
+        self.generateTileCoordinates()
+        self.stateGameOver = False
 
 
 class GalaxyApp(App):
