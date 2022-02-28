@@ -4,7 +4,7 @@ Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '400')
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.properties import NumericProperty,Clock,ObjectProperty
+from kivy.properties import NumericProperty,Clock,ObjectProperty,StringProperty
 from kivy.graphics.vertex_instructions import Line,Quad,Triangle
 from kivy.graphics.context_instructions import Color
 from kivy.core.window import Window
@@ -14,7 +14,8 @@ from kivy.lang import Builder
 
 Builder.load_file("menu.kv")
 class MainWidget(RelativeLayout):
-    
+    menuTitle = StringProperty("G   A   L   A   X   Y")
+    buttonTitle = StringProperty("START")
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.perspectivePointX = NumericProperty(0)
@@ -31,6 +32,7 @@ class MainWidget(RelativeLayout):
         self.shipCoordinates = []
         self.stateGameOver = False
         self.StateGameStart = False
+        
         self.menuWidget = ObjectProperty()
         self.createVerticalLines()
         self.createHorizontalLines()
@@ -205,6 +207,8 @@ class MainWidget(RelativeLayout):
                 self.generateTileCoordinates()
         if (not self.checkShipCollision() and not self.stateGameOver): 
             self.stateGameOver = True
+            self.menuTitle = "G  A  M  E    O  V  E  R"
+            self.buttonTitle = "RESTART"
             self.menuWidget.opacity = 1
 
     def on_touch_down(self, touch):
